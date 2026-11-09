@@ -1,0 +1,153 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Everyday Food Tracker</title><style>
+*{box-sizing:border-box}body{margin:0;font:18px/1.4 system-ui,sans-serif;background:#f6f8f4;color:#1d2a1f}
+header{background:#2f6b3a;color:#fff;padding:14px 16px}h1{margin:0;font-size:1.4em}main{max-width:720px;margin:auto;padding:12px}
+.card{background:#fff;border-radius:14px;padding:14px;margin:12px 0;box-shadow:0 1px 4px #0002}
+button,select,input{font:inherit;min-height:48px;border-radius:10px;border:1px solid #9aa89c;padding:6px 10px}
+button{background:#2f6b3a;color:#fff;border:0;cursor:pointer}button.sec{background:#e3ebe4;color:#1d2a1f}button.del{background:#b3261e}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #f4a300;outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}.row>select{flex:1;min-width:180px}
+.item{display:grid;grid-template-columns:1fr 90px auto auto;gap:6px;align-items:center;border-top:1px solid #e3e8e3;padding:6px 0}
+.item input{width:90px}.small{font-size:.8em;color:#4b5a4d}.big{font-size:1.6em;font-weight:700}
+.warn{background:#fff3cd;border:2px solid #c99a00;border-radius:10px;padding:10px;margin:8px 0}.over{color:#b3261e}
+ul.res{list-style:none;margin:4px 0;padding:0;max-height:260px;overflow:auto;border:1px solid #d5dcd6;border-radius:10px}ul.res li button{width:100%;text-align:left;background:#fff;color:#1d2a1f;border-bottom:1px solid #eef;border-radius:0}
+.res:empty{display:none}.search{flex:1;min-width:200px}.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:3px}.bdg{font-size:.75em;padding:2px 8px;border-radius:12px;border:2px solid}
+.q-green{background:#e3f4e5;border-color:#2e7d32}.q-orange{background:#fff0d9;border-color:#c26a00}.q-red{background:#fde4e2;border-color:#b3261e}.q-none{background:#eee;border-color:#888}
+.p-green{border-style:dashed;border-color:#2e7d32}.p-orange{border-style:dashed;border-color:#c26a00}.p-red{border-style:dashed;border-color:#b3261e}.p-none{border-style:dashed;border-color:#888}
+.picker{position:relative;flex:1;min-width:220px}.pbtn{width:100%;text-align:left;background:#fff;color:#1d2a1f;border:1px solid #9aa89c;display:flex;justify-content:space-between;gap:6px;align-items:center}
+.pop{position:absolute;z-index:5;left:0;right:0;top:100%;background:#fff;border:1px solid #9aa89c;border-radius:10px;box-shadow:0 4px 14px #0003;padding:6px}
+.pop input{width:100%}.opts{list-style:none;margin:6px 0 0;padding:0;max-height:300px;overflow:auto}.opts li{padding:8px;min-height:44px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.opts li[aria-selected=true],.opts li:hover{background:#e7efe8;outline:2px solid #2f6b3a}.qd{font-size:.72em;font-weight:700;padding:2px 8px;border-radius:12px;border:2px solid;white-space:nowrap}
+.mrow{border-top:1px solid #e3e8e3;padding:8px 0}.mrow input{width:100%;margin:3px 0}
+.item{border:2px solid #ccc;border-left-width:10px;border-radius:10px;padding:8px;margin:6px 0}
+.row-green{background:#eaf6ec;border-color:#2e7d32}.row-orange{background:#fff1dc;border-color:#c26a00}.row-red{background:#fde6e4;border-color:#b3261e}.row-none{background:#f2f2f2;border-color:#888}
+.pstat{font-weight:700;margin:3px 0}.row-green .pstat{color:#1b5e20}.row-orange .pstat{color:#8a4500}.row-red .pstat{color:#8c1d18}
+.qtag{font-size:.72em;padding:1px 7px;border-radius:10px;border:1px solid;opacity:.85}
+details.usual{background:#f0f6f1;border:2px solid #2f6b3a;border-radius:12px;padding:8px;margin:8px 0}details.usual summary{font-weight:700;min-height:44px;display:flex;align-items:center;cursor:pointer}
+.ulist{max-height:340px;overflow:auto;background:#fff;border-radius:8px;padding:4px}.urow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:6px;border-bottom:1px solid #e3e8e3}
+.urow input[type=checkbox]{width:28px;height:28px;min-height:28px}.urow label{flex:1;min-width:150px;display:flex;gap:6px;align-items:center;margin:0;cursor:pointer}.urow input[type=number]{width:90px}
+.optbtn{width:100%;display:flex;justify-content:space-between;gap:8px;align-items:center;background:#fff;color:#1d2a1f;text-align:left}.optbtn[aria-pressed=true]{background:#e7efe8;outline:2px solid #2f6b3a}.opts li.qli{padding:0}
+h2{margin:0 0 6px;text-transform:capitalize}label{display:block;margin:6px 0}
+</style></head><body><header><h1>Everyday Food Tracker</h1><div class="small" style="color:#dfe">Preview · data stays on this device</div></header><main>
+<div class="card"><div class="row"><button class="sec" id="prev" aria-label="Previous day">◀</button><input type="date" id="date" aria-label="Diary date"><button class="sec" id="next" aria-label="Next day">▶</button></div>
+<div class="big" id="total" aria-live="polite"></div><div id="remain"></div><div id="warn"></div>
+<p class="small">The calorie target is an editable estimate, not a medical prescription. Values marked estimate/pending are approximate or not yet counted.</p></div>
+<noscript><div class="warn">This app needs JavaScript. Download the file and open it in Chrome or Edge (not a chat preview).</div></noscript>
+<div id="meals"><div class="card warn" id="loading">Loading meals… If this message stays, download the file and open it in Chrome or Edge (not a chat or email preview).</div></div>
+<div class="card small"><b>About the colour tags.</b> <b>Food</b> tag (solid): a simplified general guide, not an official nutrition score or medical advice — green “choose more often”, orange “consider portion &amp; frequency”, red “occasional choice”. Low calories doesn't automatically mean healthy, and no food is forbidden. <b>Diary row colour</b> = portion: compares your amount with a reference serving chosen by this app (label serve or usual amount) — up to 1× = within reference, over 1× to 2× = larger, over 2× = much larger. Reference servings are app conventions, not safe limits or recommended intakes. Your daily total is what matters.</div>
+<div class="card"><h2>Weight (optional)</h2><div class="row"><input type="number" step="0.1" min="20" max="400" id="wt" aria-label="Weight in kg for this date" placeholder="kg"><button id="wtsave">Save weight</button></div><div id="wtlist" class="small"></div></div>
+<div class="card"><h2>Settings</h2>
+<label>Daily calorie target (kcal) <input type="number" id="target" min="800" max="6000"></label>
+<p class="small">Optional personal measurements — stored only on this device, never in the app file.</p>
+<label>Height (cm) <input type="number" id="height"></label><label>Starting weight (kg) <input type="number" step="0.1" id="baseWeight"></label>
+<label>Waist (cm) <input type="number" id="waist"></label><label>Belly / gut (cm) <input type="number" id="gut"></label>
+<div class="row"><button id="savesettings">Save settings</button></div>
+<div class="row"><button class="sec" id="export">Export backup</button><label class="sec" style="margin:0"><span class="small">Import backup</span> <input type="file" id="import" accept=".json"></label></div>
+<div class="row"><button class="del" id="reset">Clear this day…</button></div></div>
+<div class="card"><h2>Manage foods</h2><p class="small">Rename foods and add search words (comma-separated). Calories don't change. Changes saved on this device and included in backups.</p><div id="manage"></div></div>
+<div class="card small" id="sources"></div>
+</main><script>/*CORE*/</script><script>
+const $=id=>document.getElementById(id);let st=FT.loadState(localStorage);const bstate={};FT.setOverrides(st.overrides);let cur=FT.dateKey(),focusId=null;
+const day=()=>st.days[cur]||(st.days[cur]=FT.emptyDay());const save=()=>FT.saveState(localStorage,st);
+const fmt=k=>Math.round(k);
+function updateTotals(){const d=day(),t=FT.totals(d),tg=Number(st.settings.target)||2000;
+$('total').textContent=fmt(t.total)+' / '+tg+' kcal'+(t.pending?' + pending':'');
+const r=tg-t.total;$('remain').innerHTML=r>=0?'Remaining budget: <b>'+fmt(r)+' kcal</b>':'<b class="over">Over target by '+fmt(-r)+' kcal</b>';
+$('warn').innerHTML=t.pending?'<div class="warn" role="alert">⚠ Total incomplete: '+t.pending+' item(s) have no verified calories yet (e.g. rissoles, supplements) and are not counted.</div>':'';
+FT.MEALS.forEach(m=>{const e=$('mk-'+m);if(e)e.textContent=fmt(t.per[m])+' kcal';});return t;}
+function render(){$('date').value=cur;const d=day(),t=updateTotals();
+$('meals').innerHTML='';FT.MEALS.forEach(m=>{const c=document.createElement('div');c.className='card';
+c.innerHTML='<h2>'+FT.MEAL_LABEL[m]+' <span class="small" id="mk-'+m+'">'+fmt(t.per[m])+' kcal</span></h2>';
+c.append(quickPicker(m));
+c.append(foodPicker(m));
+d[m].forEach((it,i)=>{const f=FT.byId(it.food),row=document.createElement('div');const qq=FT.quality(f);
+const nm=document.createElement('div');const nt=document.createElement('b');nt.textContent=FT.displayName(f);const kc=document.createElement('div');kc.className='small';
+const ps=document.createElement('div');ps.className='pstat';const b1=document.createElement('span');b1.className='qtag q-'+(qq.level||'none');b1.textContent='Food quality: '+qq.label;b1.title=qq.reason;
+const qr=document.createElement('span');qr.className='small';qr.textContent=' '+qq.reason;nm.append(nt,kc,ps,b1,qr);row.append(nm);
+const paint=()=>{const k=FT.itemKcal(it),pp=FT.portion(it);row.className=FT.rowClass(it);kc.textContent=k==null?'pending – not counted':fmt(k)+' kcal'+(f.est?' (estimate)':'');
+ ps.textContent=(pp.level?{green:'✓ ',orange:'▲ ',red:'▲▲ '}[pp.level]:'')+'Portion: '+pp.label+(pp.ratio!=null?' — '+pp.reason:'');};paint();
+const inp=document.createElement('input');inp.type='number';inp.value=it.amount;inp.min='0';inp.step='any';inp.setAttribute('aria-label',FT.displayName(f)+' amount in '+f.unit);
+inp.oninput=()=>{if(FT.validAmount(inp.value)){it.amount=Number(inp.value);save();paint();updateTotals();}};
+inp.onchange=()=>{if(!FT.validAmount(inp.value)){alert('Please enter an amount above 0 (max 5000).');inp.value=it.amount;}};
+const u=document.createElement('span');u.textContent=f.unit==='count'?'×':f.unit;const del=document.createElement('button');del.className='del';del.textContent='✕';del.setAttribute('aria-label','Delete '+FT.displayName(f));
+del.onclick=()=>{d[m].splice(i,1);save();render();};row.append(inp,u,del);c.append(row);});$('meals').append(c);});
+renderSources();renderManage();
+if(focusId){const e=$(focusId);focusId=null;if(e)e.focus();}
+$('wt').value=st.weights[cur]||'';$('wtlist').textContent=Object.keys(st.weights).sort().slice(-7).map(k=>k+': '+st.weights[k]+' kg').join(' · ');
+['target','height','baseWeight','waist','gut'].forEach(k=>$(k).value=st.settings[k]??'');}
+const QTXT={green:'Choose more often',orange:'Consider',red:'Occasional',none:'Not rated'};
+function qBadge(f){const q=FT.quality(f),sp=document.createElement('span');sp.className='qd q-'+(q.level||'none');sp.textContent=q.level?{green:'● Green',orange:'● Orange',red:'● Red'}[q.level]:'○ Not rated';sp.title=q.label+': '+q.reason;return sp;}
+function foodPicker(m){const wrap=document.createElement('div');wrap.className='row';const pk=document.createElement('div');pk.className='picker';let sel=null,act=0,list=[];
+ const btn=document.createElement('button');btn.type='button';btn.className='pbtn';btn.setAttribute('aria-haspopup','listbox');btn.setAttribute('aria-expanded','false');
+ const lab=document.createElement('span');lab.textContent='Choose a food…';const car=document.createElement('span');car.textContent='▾';btn.append(lab,car);
+ const pop=document.createElement('div');pop.className='pop';pop.hidden=true;const q=document.createElement('input');q.type='search';q.placeholder='Search foods…';q.setAttribute('aria-label','Search foods for '+FT.MEAL_LABEL[m]);q.autocomplete='off';
+ const ul=document.createElement('ul');ul.className='opts';ul.setAttribute('role','listbox');ul.id='opts-'+m;ul.setAttribute('aria-label','Foods');q.setAttribute('aria-controls',ul.id);
+ const st=document.createElement('div');st.className='small';st.setAttribute('aria-live','polite');pop.append(q,st,ul);
+ const choose=f=>{sel=f;lab.textContent='';lab.append(document.createTextNode(FT.displayName(f)+' '),qBadge(f));close();btn.focus();};
+ const fill=()=>{list=FT.searchFoods(q.value).sort((a,b)=>FT.displayName(a).localeCompare(FT.displayName(b)));ul.innerHTML='';act=Math.min(act,Math.max(0,list.length-1));
+  st.textContent=list.length?'':'No foods match “'+q.value.trim()+'”. Try another word, or add a search word in Manage foods.';
+  list.forEach((f,i)=>{const li=document.createElement('li');li.setAttribute('role','option');li.id=ul.id+'-'+i;li.setAttribute('aria-selected',i===act?'true':'false');
+   const n=document.createElement('span');n.textContent=FT.displayName(f)+(f.kcal==null?' (pending)':f.est?' (estimate)':'');li.title=FT.quality(f).label+': '+FT.quality(f).reason;li.append(n,qBadge(f));
+   li.onmousedown=e=>e.preventDefault();li.onclick=()=>choose(f);ul.append(li);});
+  if(list.length)q.setAttribute('aria-activedescendant',ul.id+'-'+act);else q.removeAttribute('aria-activedescendant');};
+ const open=()=>{pop.hidden=false;btn.setAttribute('aria-expanded','true');q.value='';act=0;fill();q.focus();};
+ const close=()=>{pop.hidden=true;btn.setAttribute('aria-expanded','false');};
+ btn.onclick=()=>pop.hidden?open():close();q.oninput=()=>{act=0;fill();};
+ q.onkeydown=e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!list.length)return;act=(act+(e.key==='ArrowDown'?1:-1)+list.length)%list.length;fill();const el=document.getElementById(ul.id+'-'+act);el&&el.scrollIntoView({block:'nearest'});}
+  else if(e.key==='Enter'){e.preventDefault();if(list[act])choose(list[act]);}else if(e.key==='Escape'){close();btn.focus();}};
+ pk.addEventListener('focusout',e=>{if(!pk.contains(e.relatedTarget))close();});pk.append(btn,pop);
+ const add=document.createElement('button');add.className='sec';add.textContent='Add food';add.onclick=()=>{if(!sel){open();return;}day()[m].push(FT.makeItem(sel.id));save();render();};
+ const l=document.createElement('div');l.className='small';l.style.width='100%';l.textContent='Add a single food:';wrap.append(l,pk,add);return wrap;}
+function quickPicker(m){const L=FT.MEAL_LABEL[m],B=bstate[m]||(bstate[m]={open:false,editing:false,q:'',items:null,sel:''});const wrap=document.createElement('div');
+ const favs=st.favs[m];if(B.sel&&!favs.some(x=>x.food===B.sel))B.sel='';
+ const row=document.createElement('div');row.className='row';const l=document.createElement('div');l.className='small';l.style.width='100%';l.textContent='Quick choice:';
+ const pk=document.createElement('div');pk.className='picker';const btn=document.createElement('button');btn.type='button';btn.className='pbtn';btn.setAttribute('aria-expanded',B.open?'true':'false');btn.setAttribute('aria-label',L+' quick choice');
+ const lab=document.createElement('span');const fsel=B.sel&&FT.byId(B.sel);if(fsel){const a=favs.find(x=>x.food===B.sel);lab.append(document.createTextNode(FT.displayName(fsel)+' '+a.amount+(fsel.unit==='count'?'×':' '+fsel.unit)+' '),qBadge(fsel));}else lab.textContent='Quick choice…';
+ const car=document.createElement('span');car.textContent='▾';btn.append(lab,car);
+ const pop=document.createElement('div');pop.className='pop';pop.hidden=!B.open;
+ if(!favs.length){const e=document.createElement('div');e.className='small';e.style.padding='8px';e.textContent='No foods selected yet. Use Edit to tick foods for '+L.toLowerCase()+'.';pop.append(e);}
+ else{const ul=document.createElement('ul');ul.className='opts';favs.slice().sort((a,b)=>FT.displayName(FT.byId(a.food)).localeCompare(FT.displayName(FT.byId(b.food)))).forEach(x=>{const f=FT.byId(x.food);const li=document.createElement('li');li.className='qli';const ob=document.createElement('button');ob.type='button';ob.className='optbtn';
+  ob.setAttribute('aria-pressed',B.sel===x.food?'true':'false');const n=document.createElement('span');n.textContent=FT.displayName(f)+' — '+x.amount+(f.unit==='count'?'×':' '+f.unit)+(f.kcal==null?' (pending)':f.est?' (estimate)':'');ob.append(n,qBadge(f));
+  ob.onclick=()=>{B.sel=x.food;B.open=false;render();};li.append(ob);ul.append(li);});pop.append(ul);}
+ const eb=document.createElement('button');eb.type='button';eb.className='sec';eb.textContent='✎ Edit';eb.setAttribute('aria-label','Edit '+L.toLowerCase()+' quick choices');eb.style.width='100%';eb.style.marginTop='6px';
+ eb.onclick=()=>{B.open=false;B.editing=true;B.items=null;render();};pop.append(eb);
+ btn.onclick=()=>{B.open=!B.open;render();const p2=document.querySelector('[data-qp="'+m+'"] .pop button');p2&&B.open&&p2.focus();};
+ pop.onkeydown=e=>{if(e.key==='Escape'){B.open=false;render();}};pk.append(btn,pop);
+ const add=document.createElement('button');add.textContent='Add choice';add.onclick=()=>{if(!B.sel){B.open=true;render();return;}const it=FT.favItem(st.favs,m,B.sel);if(it){day()[m].push(it);save();render();}};
+ row.append(l,pk,add);row.dataset.qp=m;wrap.append(row);if(B.editing)wrap.append(favEditor(m,B));return wrap;}
+function favEditor(m,B){const L=FT.MEAL_LABEL[m];if(!B.items){B.items={};st.favs[m].forEach(x=>B.items[x.food]=x.amount);}
+ const det=document.createElement('div');det.className='usual';const h=document.createElement('b');h.textContent='Edit '+L.toLowerCase()+' quick choices';
+ const p=document.createElement('p');p.className='small';p.textContent='Tick the foods you want in the Quick choice list and set their usual amounts. Saving does not add anything to the diary.';det.append(h,p);
+ const q=document.createElement('input');q.type='search';q.placeholder='Search foods…';q.setAttribute('aria-label','Search foods for '+L+' quick choices');q.value=B.q;q.style.width='100%';
+ const list=document.createElement('div');list.className='ulist';const none=document.createElement('div');none.className='small';none.setAttribute('aria-live','polite');
+ const stat=document.createElement('span');stat.className='small';stat.setAttribute('aria-live','polite');
+ const fillU=()=>{list.textContent='';const r=FT.searchFoods(q.value).sort((a,b)=>(B.items[b.id]!=null?1:0)-(B.items[a.id]!=null?1:0)||FT.displayName(a).localeCompare(FT.displayName(b)));
+  none.textContent=r.length?'':'No foods match “'+q.value.trim()+'”.';
+  r.forEach(f=>{const row=document.createElement('div');row.className='urow';const id='u-'+m+'-'+f.id;const cb=document.createElement('input');cb.type='checkbox';cb.id=id;cb.checked=B.items[f.id]!=null;
+   const lb=document.createElement('label');lb.htmlFor=id;lb.append(document.createTextNode(FT.displayName(f)+(f.kcal==null?' (pending)':f.est?' (estimate)':'')),qBadge(f));
+   const amt=document.createElement('input');amt.type='number';amt.step='any';amt.min='0';amt.value=B.items[f.id]??f.def;amt.disabled=!cb.checked;amt.setAttribute('aria-label','Amount of '+FT.displayName(f)+' in '+f.unit);
+   const un=document.createElement('span');un.textContent=f.unit==='count'?'×':f.unit;
+   cb.onchange=()=>{if(cb.checked)B.items[f.id]=FT.validAmount(amt.value)?Number(amt.value):f.def;else delete B.items[f.id];amt.disabled=!cb.checked;stat.textContent='Unsaved changes';};
+   amt.oninput=()=>{if(cb.checked&&FT.validAmount(amt.value)){B.items[f.id]=Number(amt.value);stat.textContent='Unsaved changes';}};
+   row.append(cb,lb,amt,un);list.append(row);});};
+ q.oninput=()=>{B.q=q.value;fillU();};
+ const br=document.createElement('div');br.className='row';const sv=document.createElement('button');sv.textContent='Save';
+ sv.onclick=()=>{FT.setFavs(st.favs,m,Object.keys(B.items).map(k=>({food:k,amount:B.items[k]})));save();B.editing=false;B.items=null;render();};
+ const cn=document.createElement('button');cn.className='sec';cn.textContent='Cancel';cn.onclick=()=>{B.editing=false;B.items=null;render();};
+ br.append(sv,cn,stat);fillU();det.append(q,none,list,br);setTimeout(()=>{if(document.activeElement===document.body)q.focus();},0);return det;}
+function renderSources(){const s=$('sources');s.textContent='';const h=document.createElement('h2');h.textContent='Food sources';s.append(h);FT.FOODS.forEach(f=>{const d=document.createElement('div'),b=document.createElement('b');b.textContent=FT.displayName(f);d.append(b,document.createTextNode(': '+f.src+(FT.displayName(f)!==f.name?' (original name: '+f.name+')':'')));s.append(d);});}
+function renderManage(){const box=$('manage');if(box.contains(document.activeElement))return;box.textContent='';FT.FOODS.forEach(f=>{const o=st.overrides[f.id]||{},r=document.createElement('div');r.className='mrow';
+ const t=document.createElement('div');t.append(document.createTextNode(f.name+' '),qBadge(f));
+ const n=document.createElement('input');n.value=o.name||'';n.placeholder='Display name (blank = original)';n.setAttribute('aria-label','Display name for '+f.name);
+ const a=document.createElement('input');a.value=(o.aliases||[]).join(', ');a.placeholder='Extra search words, comma-separated';a.setAttribute('aria-label','Search words for '+f.name);
+ const bs=document.createElement('button');bs.textContent='Save';bs.onclick=()=>{const c=FT.cleanOverride({name:n.value,aliases:a.value});if(c)st.overrides[f.id]=c;else delete st.overrides[f.id];FT.setOverrides(st.overrides);save();document.activeElement.blur();render();};
+ const br=document.createElement('button');br.className='sec';br.textContent='Reset';br.onclick=()=>{delete st.overrides[f.id];FT.setOverrides(st.overrides);save();document.activeElement.blur();render();};
+ const dd=document.createElement('div');dd.className='small';dd.textContent='Standard search words: '+(f.aliases||[]).join(', ');const rr=document.createElement('div');rr.className='row';rr.append(bs,br);r.append(t,n,a,dd,rr);box.append(r);});}
+$('date').onchange=e=>{if(FT.validDate(e.target.value)){cur=e.target.value;render();}};$('prev').onclick=()=>{cur=FT.shiftDate(cur,-1);render();};$('next').onclick=()=>{cur=FT.shiftDate(cur,1);render();};
+$('wtsave').onclick=()=>{const v=Number($('wt').value);if(!(v>20&&v<400)){delete st.weights[cur];}else st.weights[cur]=v;save();render();};
+$('savesettings').onclick=()=>{const tg=Number($('target').value);if(!(tg>=800&&tg<=6000))return alert('Target must be 800–6000 kcal.');st.settings.target=tg;['height','baseWeight','waist','gut'].forEach(k=>{const v=$(k).value;st.settings[k]=v===''?null:Number(v);});save();render();};
+$('reset').onclick=()=>{if(confirm('Clear all food for '+cur+'? This cannot be undone.')){st.days[cur]=FT.emptyDay();save();render();}};
+$('export').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(st,null,1)],{type:'application/json'}));a.download='everyday-food-tracker-backup-'+FT.dateKey()+'.json';a.click();};
+$('import').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const s=FT.importBackup(t);if(confirm('Replace current data with this backup?')){st=s;for(const k in bstate)delete bstate[k];FT.setOverrides(st.overrides);save();render();}}catch(x){alert(x.message);}});};
+render();
+</script></body></html>
